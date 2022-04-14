@@ -4,10 +4,10 @@
 // light1button = 9, light2button = 10
 
 // TODO: 
-// tie 3 button 470 ohm resistor to ground on pcb
-// solder fuse to 120v main
-// Install all wiring and components to base
-// cut sides and mount lcd, buttons, and outlets
+// 
+// Cut 2 new back pieces (one with a slot for wire)
+// 
+// 
 
 
 // include the library code:
@@ -25,9 +25,9 @@ const int lcdButtonPin = 7;
 
 // Relays
 const int r1 = 8, r2 = 6;
-const int L1 = 9, L2 = 10;
-bool relay1 = true;
-bool relay2 = true;
+const int s1 = 9, s2 = 10;
+bool relay1 = false;
+bool relay2 = false;
 
 // Time
 int second;
@@ -79,16 +79,15 @@ void keepTime() {
 void updateRelays() {
   // Update the states of the relays
   if ((hour == 12)) {
-    relay1 = false;
-    relay2 = false;
-  }
-  if ((hour == 0) & (day > 0)) {
     relay1 = true;
     relay2 = true;
   }
-  // Update relays
-  digitalWrite(r1, relay1);
-  digitalWrite(r2, relay2);
+  if ((hour == 0) & (day > 0)) {
+    relay1 = false;
+    relay2 = false;
+  }
+   digitalWrite(r1, relay1);
+   digitalWrite(r2, relay2);
 }
 
 String timeString() {
@@ -100,10 +99,10 @@ String timeString() {
 String relayStateString(bool relay) {
   String line;
   if (relay == true) {
-    line = "ON";
+    line = "OFF";
   }
   else {
-    line = "OFF";
+    line = "ON";
   }
   return line;
 }
@@ -140,6 +139,10 @@ void setup() {
   // Set relay pins
   pinMode(r1, OUTPUT);
   pinMode(r2, OUTPUT);
+  // Set Push Button pins
+  pinMode(s1, INPUT_PULLUP);
+  pinMode(s2, INPUT_PULLUP);
+  pinMode(lcdButtonPin, INPUT_PULLUP);
   
 }
 
@@ -153,35 +156,35 @@ void loop() {
   // LCD state change by button
   if (button(lcdButtonPin)) {
     nextState();
-    delay(200);
+    delay(500);
   }
   else {
     if (currentState == 2) {
       displayText(states[currentState] + String(day), timeString());
-      delay(100);
+      delay(50);
     }
     else if (currentState == 4) {
       displayText(states[currentState] + sensorText("temp"), states[currentState+1] + sensorText("humidity"));
-      delay(100);
+      delay(50);
     }
     else if (currentState == 6) {
       displayText(states[currentState] + relayStateString(relay1), states[currentState+1] + relayStateString(relay2));
-      delay(100);
+      delay(50);
     }
     else {
       displayText(states[currentState], states[currentState+1]);
-      delay(100);
+      delay(50);
     }
   }
 
   // Light Toggle buttons
-  if (button(L1) == true) {
+  if (button(s1) == false) {
     relay1 = toggle(relay1);
-    delay(50);
+    delay(500);
   }
-  if (button(L2) == true) {
+  if (button(s2) == false) {
     relay2 = toggle(relay2);
-    delay(50);
+    delay(500);
   }
 
   // Tick rate
